@@ -15,6 +15,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
 
     func applicationDidFinishLaunching(aNotification: NSNotification) {
+        // println("Application Delegate Called for Loading")
         // Insert code here to initialize your application
     }
 
@@ -22,6 +23,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         // Insert code here to tear down your application
     }
 
+    func applicationShouldTerminateAfterLastWindowClosed(_theApplication: NSApplication) -> Bool {
+        return (true)
+        // Single window, so we can quit fine if user closes this 
+    }
 
 }
 

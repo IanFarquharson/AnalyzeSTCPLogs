@@ -11,6 +11,11 @@
 		3C349F071A8C93550061289D /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 3C349F061A8C93550061289D /* Images.xcassets */; };
 		3C349F0A1A8C93550061289D /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 3C349F081A8C93550061289D /* MainMenu.xib */; };
 		3C349F161A8C93550061289D /* AnalyzeSTCPLogsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C349F151A8C93550061289D /* AnalyzeSTCPLogsTests.swift */; };
+		3C7722221A8CB566007D75C5 /* AnalyzeController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C7722211A8CB566007D75C5 /* AnalyzeController.swift */; };
+		3C7722261A8D0881007D75C5 /* StringExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C7722251A8D0881007D75C5 /* StringExtensions.swift */; };
+		3CDBC2B91A95DC0000F49452 /* netSample.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CDBC2B81A95DC0000F49452 /* netSample.swift */; };
+		3CDBC2BB1A95EA2C00F49452 /* interface.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CDBC2BA1A95EA2C00F49452 /* interface.swift */; };
+		3CDBC2BD1A95EF2400F49452 /* outputFile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CDBC2BC1A95EF2400F49452 /* outputFile.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -32,6 +37,11 @@
 		3C349F0F1A8C93550061289D /* AnalyzeSTCPLogsTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AnalyzeSTCPLogsTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		3C349F141A8C93550061289D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		3C349F151A8C93550061289D /* AnalyzeSTCPLogsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalyzeSTCPLogsTests.swift; sourceTree = "<group>"; };
+		3C7722211A8CB566007D75C5 /* AnalyzeController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AnalyzeController.swift; sourceTree = "<group>"; };
+		3C7722251A8D0881007D75C5 /* StringExtensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = StringExtensions.swift; path = ../StringExtensions.swift; sourceTree = "<group>"; };
+		3CDBC2B81A95DC0000F49452 /* netSample.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = netSample.swift; sourceTree = "<group>"; };
+		3CDBC2BA1A95EA2C00F49452 /* interface.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = interface.swift; sourceTree = "<group>"; };
+		3CDBC2BC1A95EF2400F49452 /* outputFile.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = outputFile.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -73,7 +83,12 @@
 		3C349F011A8C93550061289D /* AnalyzeSTCPLogs */ = {
 			isa = PBXGroup;
 			children = (
+				3C7722251A8D0881007D75C5 /* StringExtensions.swift */,
 				3C349F041A8C93550061289D /* AppDelegate.swift */,
+				3C7722211A8CB566007D75C5 /* AnalyzeController.swift */,
+				3CDBC2B81A95DC0000F49452 /* netSample.swift */,
+				3CDBC2BA1A95EA2C00F49452 /* interface.swift */,
+				3CDBC2BC1A95EF2400F49452 /* outputFile.swift */,
 				3C349F061A8C93550061289D /* Images.xcassets */,
 				3C349F081A8C93550061289D /* MainMenu.xib */,
 				3C349F021A8C93550061289D /* Supporting Files */,
@@ -205,7 +220,12 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				3CDBC2BD1A95EF2400F49452 /* outputFile.swift in Sources */,
+				3C7722261A8D0881007D75C5 /* StringExtensions.swift in Sources */,
+				3CDBC2BB1A95EA2C00F49452 /* interface.swift in Sources */,
 				3C349F051A8C93550061289D /* AppDelegate.swift in Sources */,
+				3C7722221A8CB566007D75C5 /* AnalyzeController.swift in Sources */,
+				3CDBC2B91A95DC0000F49452 /* netSample.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -393,6 +413,7 @@
 				3C349F1B1A8C93550061289D /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		3C349F1C1A8C93550061289D /* Build configuration list for PBXNativeTarget "AnalyzeSTCPLogsTests" */ = {
 			isa = XCConfigurationList;
@@ -401,6 +422,7 @@
 				3C349F1E1A8C93550061289D /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
