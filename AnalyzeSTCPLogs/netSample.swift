@@ -10,17 +10,14 @@ import Foundation
 
 class netSample {
     var index: Int = 0
-    var year: Int = 0
-    var month: Int = 0
-    var day: Int = 0
-    var hour: Int = 0
-    var minute: Int = 0
-    var second: Int = 0
-    var sqeErrors: Double = 0.0
+    var absTime:NSDate = NSDate()
+    var date:String = ""
+    var time:String = ""
     var sentFrames: Double = 0.0
     var recvFrames: Double = 0.0
-    var reXmit: Double = 0.0
     var sentBytes: Double = 0.0
     var recvBytes: Double = 0.0
+    var reXmit: Double = 0.0
+    var lostFrames: Double = 0.0
     
 }

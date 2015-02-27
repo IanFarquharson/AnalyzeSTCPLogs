@@ -11,6 +11,7 @@ import Foundation
 class interface {
     var index: Int = 0
     var deviceName:String = ""
+    var MAC:String = ""
     var speed:String = ""
     var ipAddr:String = ""
     
