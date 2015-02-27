@@ -229,6 +229,7 @@ class AnalyzeController: NSViewController {
                 var newInterface = interface()
 
                 newInterface.MAC = MA!
+                newInterface.MAC = newInterface.MAC.replace(":", withString:"")
                 newInterface.speed = SP!
                 newInterface.deviceName = aName
                 
@@ -239,15 +240,40 @@ class AnalyzeController: NSViewController {
             
         }
         
+/*Toms code deals with overflowing meters by doing:-
+
+double Change(double This, double Last, double Scale)
+{
+double    Temp;
+
+/*   Handle counter overflow */
+
+if (This >= Last)
+Temp = (This - Last) / Scale;
+else Temp = ((((double)UINT_MAX + 1.0) - Last) + This) / Scale;
+
+return Temp;
+}
+*/
+
         func rateAsString (nowCount:Double, prevCount:Double, interval:Int) -> String
         {
+            
+            var retVal:Double
             if interval == 0 {
                 return "div/0 error"
             }
             else {
-                var retVal = (nowCount - prevCount) / Double(interval)
                 
-                return ( String(format:"%.2f", (nowCount - prevCount) / Double(interval)))
+                if nowCount >= prevCount {
+                
+                    retVal = (nowCount - prevCount) / Double(interval)
+                }
+                
+                else {
+                    retVal = (((Double(UINT32_MAX) + 1.0) - prevCount) + nowCount) / Double(interval)
+                }
+                return String(format:"%.2f", retVal)
                 
                 //return ( String(format:"%.2f", retVal ))
                 
@@ -499,6 +525,9 @@ class AnalyzeController: NSViewController {
 
                 var uniqueName:String = DN! + "_" + MA!
                 
+                uniqueName = uniqueName.replace(":", withString:"")
+                
+                
                 var devIndex = findName(uniqueName)
                 
                 if (devIndex > data.count)
@@ -559,6 +588,7 @@ class AnalyzeController: NSViewController {
         
         // Parser ended o.k. 
         self.progressText.insertText("Parser Completed\n")
+        self.progressText.display()
         
         let elapsed = NSDate().timeIntervalSinceDate (startTime)
         
@@ -567,6 +597,7 @@ class AnalyzeController: NSViewController {
         self.progressText.insertText(outString)
         
         self.progressText.insertText("Constructing Output\n")
+        self.progressText.display()
         
         for dev:Int in 0...data.count-1  { //Go thru the interfaces found
             
@@ -597,17 +628,22 @@ class AnalyzeController: NSViewController {
                 outputData = outputData + "\n"
                 
                 }
+            list.removeAllObjects()
 
             var  outputFile = self.outDir + "/" + thisInterface.deviceName + ".csv"
             
             if (outputData.writeToFile(outputFile, atomically:true, encoding:NSUTF8StringEncoding, error:&error)){
                 self.progressText.insertText("Wrote: \(outputFile)\n")
+                self.progressText.display()
             }
             else {
                 self.progressText.insertText("File write failed with error:\(error?.localizedDescription)\n")
             }
-            
+
         }
+        data.removeAllObjects()
+        devNames.removeAllObjects()
+        interfaceList.removeAllObjects()
         
         outString = String(format:"Seconds Elapsed %.2f\n",NSDate().timeIntervalSinceDate (startTime))
         
