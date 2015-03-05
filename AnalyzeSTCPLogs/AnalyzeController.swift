@@ -239,22 +239,6 @@ class AnalyzeController: NSViewController {
             }
             
         }
-        
-/*Toms code deals with overflowing meters by doing:-
-
-double Change(double This, double Last, double Scale)
-{
-double    Temp;
-
-/*   Handle counter overflow */
-
-if (This >= Last)
-Temp = (This - Last) / Scale;
-else Temp = ((((double)UINT_MAX + 1.0) - Last) + This) / Scale;
-
-return Temp;
-}
-*/
 
         func rateAsString (nowCount:Double, prevCount:Double, interval:Int) -> String
         {
@@ -557,6 +541,8 @@ return Temp;
                 var foundTerm  = myScanner.scanUpToString(state.text(), intoString:nil)
                 var termPos = myScanner.scanLocation
                 
+                //determine what to parse for next in the context.
+                
                 if foundMac && foundTerm == true {
                     if macPos < termPos {
                         state = Parser.lookForMAC
@@ -588,7 +574,6 @@ return Temp;
         
         // Parser ended o.k. 
         self.progressText.insertText("Parser Completed\n")
-        self.progressText.display()
         
         let elapsed = NSDate().timeIntervalSinceDate (startTime)
         
@@ -597,6 +582,7 @@ return Temp;
         self.progressText.insertText(outString)
         
         self.progressText.insertText("Constructing Output\n")
+        self.progressText.needsDisplay = true
         self.progressText.display()
         
         for dev:Int in 0...data.count-1  { //Go thru the interfaces found
@@ -634,6 +620,7 @@ return Temp;
             
             if (outputData.writeToFile(outputFile, atomically:true, encoding:NSUTF8StringEncoding, error:&error)){
                 self.progressText.insertText("Wrote: \(outputFile)\n")
+                self.progressText.needsDisplay = true
                 self.progressText.display()
             }
             else {
