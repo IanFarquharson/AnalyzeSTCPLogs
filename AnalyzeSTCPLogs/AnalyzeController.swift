@@ -228,9 +228,9 @@ class AnalyzeController: NSViewController {
                 
                 var newInterface = interface()
 
-                newInterface.MAC = MA!
+                newInterface.MAC = MA! as String
                 newInterface.MAC = newInterface.MAC.replace(":", withString:"")
-                newInterface.speed = SP!
+                newInterface.speed = SP! as String
                 newInterface.deviceName = aName
                 
                 interfaceList.addObject(newInterface)
@@ -283,7 +283,7 @@ class AnalyzeController: NSViewController {
         //Intitialize my scanner and whitespace sets
     
     
-        var myScanner: NSScanner = NSScanner(string:dataRead!)
+        var myScanner: NSScanner = NSScanner(string:dataRead! as String)
     
         
         //Begin Parsing
@@ -507,7 +507,7 @@ class AnalyzeController: NSViewController {
                 thisEntry.reXmit = RX
                 thisEntry.lostFrames = LF
 
-                var uniqueName:String = DN! + "_" + MA!
+                var uniqueName:String = (DN! as String) + "_" + (MA! as String)
                 
                 uniqueName = uniqueName.replace(":", withString:"")
                 
@@ -521,7 +521,7 @@ class AnalyzeController: NSViewController {
                 }
                 else
                 {
-                    list = data.objectAtIndex(devIndex) as NSMutableArray
+                    list = data.objectAtIndex(devIndex) as! NSMutableArray
                 }
                 
                 list.addObject(thisEntry)
@@ -589,13 +589,13 @@ class AnalyzeController: NSViewController {
             
             var outputData:String = "Date,Time,Device,Speed,SendBytes/s,RecvBytes/s,SendFrames/s,RecvFrames/s,ReTrans/s,LostFrame/s\n"
             
-            var list:NSMutableArray = data.objectAtIndex(dev) as NSMutableArray  //get the sample list
-            var thisInterface:interface = interfaceList.objectAtIndex(dev) as interface
+            var list:NSMutableArray = data.objectAtIndex(dev) as! NSMutableArray  //get the sample list
+            var thisInterface:interface = interfaceList.objectAtIndex(dev) as! interface
             
             for sample:Int in 1...list.count-1 { //starts at sample 1 as we will delta N from N-1
                 
-                var thisSample:netSample = list.objectAtIndex(sample) as netSample
-                var prevSample:netSample = list.objectAtIndex(sample - 1) as netSample
+                var thisSample:netSample = list.objectAtIndex(sample)as! netSample
+                var prevSample:netSample = list.objectAtIndex(sample - 1) as! netSample
                 
                 var seconds = Int(thisSample.absTime.timeIntervalSinceDate(prevSample.absTime))
                 
