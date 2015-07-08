@@ -271,6 +271,19 @@ class AnalyzeController: NSViewController {
     
         //read in the passed file.
         
+        //Test Code to pop up a window
+        
+        let win = NSWindow(contentRect: NSMakeRect(100,100,600,200),
+            styleMask: NSResizableWindowMask | NSClosableWindowMask,
+            backing: NSBackingStoreType.Buffered, defer:true)
+        
+ //       win.makeKeyAndOrderFront(win)
+        
+        let controller = NSWindowController(window: win)
+        controller.showWindow(self)
+        
+        
+        
         let dataRead = NSString(contentsOfFile: path, encoding:NSUTF8StringEncoding, error: &error)
         
         if dataRead == nil  {
@@ -637,7 +650,7 @@ class AnalyzeController: NSViewController {
         self.progressText.insertText(outString)
         
         self.progSpinner.stopAnimation(self)
-        
+
         return(true)
         
     }
