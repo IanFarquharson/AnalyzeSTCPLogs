@@ -12,12 +12,13 @@ import AppKit
 
 class AnalyzeController: NSViewController {
     
-    var outDir:String = ""
     var startTime:NSDate = NSDate()
     
     var devNames = NSMutableArray()
     var data = NSMutableArray()
     var interfaceList = NSMutableArray()
+    
+    var outDir = NSString()
     
     @IBOutlet weak var sourcePath: NSTextField!
 
@@ -32,7 +33,7 @@ class AnalyzeController: NSViewController {
 
         progressText.insertText( "Starting\n")
         progSpinner.startAnimation(self)
-        var parseValid:Bool = self.doParse(sourcePath.stringValue);
+        self.doParse(sourcePath.stringValue);
     }
     
     @IBAction func resetPressed(sender: AnyObject) {
@@ -59,7 +60,7 @@ class AnalyzeController: NSViewController {
 
             self.startButton.enabled = false
         
-            var openPanel = NSOpenPanel()
+            let openPanel = NSOpenPanel()
             openPanel.allowsMultipleSelection = false
             openPanel.canChooseDirectories = false
             openPanel.canCreateDirectories = false
@@ -67,23 +68,25 @@ class AnalyzeController: NSViewController {
         
             openPanel.beginWithCompletionHandler { (result) -> Void in
                 if result == NSFileHandlingPanelOKButton {
-                    var selectedURL:NSURL = openPanel.URL!
-                    var path:String = selectedURL.path!
-
-                    if path.hasSuffix(".out") == false
+                    
+                    if openPanel.URL!.pathExtension != "out"
                     {
-                        self.progressText.insertText("Selected \(path) without .out suffix, unsuitable file?\n")
+                        self.progressText.insertText("Selected \(openPanel.URL!) without .out suffix, unsuitable file?\n")
                         self.sourcePath.stringValue = ""
 
                         return
                     }
+                    
+                    
+                    let path = openPanel.URL?.path
 
-                    self.sourcePath.stringValue = path
+                    self.sourcePath.stringValue = path!
                     self.progressText.insertText("Selected \(path)\n")
                     
-                    self.outDir = path.stringByDeletingLastPathComponent
 
-                    self.progressText.insertText("Outputting to \(self.outDir)\n")
+                    self.outDir = (openPanel.URL?.URLByDeletingLastPathComponent?.path)!
+                    
+                    self.progressText.insertText("Outputting to \(path!)\n")
                     self.startButton.enabled = true
                     }
             }
@@ -215,7 +218,7 @@ class AnalyzeController: NSViewController {
         
         func findName(aName:String) -> Int
         {
-            var index:Int = devNames.indexOfObject(aName)
+            let index:Int = devNames.indexOfObject(aName)
 
             if index != NSNotFound
             {
@@ -226,7 +229,7 @@ class AnalyzeController: NSViewController {
                 devNames.addObject(aName)
                 self.progressText.insertText("Found \(aName)\n")
                 
-                var newInterface = interface()
+                let newInterface = interface()
 
                 newInterface.MAC = MA! as String
                 newInterface.MAC = newInterface.MAC.replace(":", withString:"")
@@ -264,39 +267,51 @@ class AnalyzeController: NSViewController {
             }
         }
         
-        var index:Int
-        var outPath:String
-        var error:NSError?
-        var encoding:NSStringEncoding
     
         //read in the passed file.
         
         //Test Code to pop up a window
         
-        let win = NSWindow(contentRect: NSMakeRect(100,100,600,200),
-            styleMask: NSResizableWindowMask | NSClosableWindowMask,
-            backing: NSBackingStoreType.Buffered, defer:true)
+//        let win = NSWindow(contentRect: NSMakeRect(100,100,600,200),
+//            styleMask: NSResizableWindowMask | NSClosableWindowMask,
+//            backing: NSBackingStoreType.Buffered, defer:true)
+//        
+// //       win.makeKeyAndOrderFront(win)
+//        
+//        let controller = NSWindowController(window: win)
+//        controller.showWindow(self)
         
- //       win.makeKeyAndOrderFront(win)
-        
-        let controller = NSWindowController(window: win)
-        controller.showWindow(self)
         
         
+//        let dataRead = NSString(contentsOfFile: path, encoding:NSUTF8StringEncoding, error: &error)
+// let dataRead = String.contentsOfFile(path,encoding:NSUTF8StringEncoding, error: &error)
         
-        let dataRead = NSString(contentsOfFile: path, encoding:NSUTF8StringEncoding, error: &error)
-        
-        if dataRead == nil  {
-            self.progressText.insertText("File load failed with error:\(error?.localizedDescription)\n")
+        let dataRead: NSString?
+        do {
+            dataRead = try NSString(contentsOfFile: path, encoding: NSUTF8StringEncoding)
+        } catch let error as NSError {
+            print(error.localizedDescription)
+            self.progressText.insertText("File load failed with error:\(error)\n")
             self.progSpinner.stopAnimation(self)
+            dataRead = nil
             return false
         }
+        
+
         
         
         //Intitialize my scanner and whitespace sets
     
     
-        var myScanner: NSScanner = NSScanner(string:dataRead! as String)
+        let myScanner: NSScanner = NSScanner(string:dataRead! as String)
+        
+        //Declare position trackers
+        
+        var currPos:Int
+        var macPos:Int
+        var termPos:Int
+        var foundMac:Bool
+        var foundTerm:Bool
     
         
         //Begin Parsing
@@ -497,13 +512,13 @@ class AnalyzeController: NSViewController {
                 
             case Parser.addSample:
                 
-                var thisEntry = netSample()
+                let thisEntry = netSample()
                 var list:NSMutableArray
                 
                 thisEntry.date = String(format:"%02d/%02d/%02d",YY,MM,DD)
                 thisEntry.time = String(format:"%02d:%02d:%02d",HH,MI,SS)
                 
-                var comps = NSDateComponents()
+                let comps = NSDateComponents()
                 comps.year = YY
                 comps.month = MM
                 comps.day = DD
@@ -525,7 +540,7 @@ class AnalyzeController: NSViewController {
                 uniqueName = uniqueName.replace(":", withString:"")
                 
                 
-                var devIndex = findName(uniqueName)
+                let devIndex = findName(uniqueName)
                 
                 if (devIndex > data.count)
                 {
@@ -541,18 +556,19 @@ class AnalyzeController: NSViewController {
                 
                 //So we might next have another device, or the end of the sample
                 //Save current position
-                var currPos = myScanner.scanLocation
+                
+                currPos = myScanner.scanLocation
                 
                 state = Parser.lookForMAC
-                var foundMac = myScanner.scanUpToString(state.text(), intoString:nil)
-                var macPos = myScanner.scanLocation
+                foundMac = myScanner.scanUpToString(state.text(), intoString:nil)
+                macPos = myScanner.scanLocation
                 
                 //reset context... 
                 myScanner.scanLocation = currPos
                 
                 state = Parser.lookForSampleTermination
-                var foundTerm  = myScanner.scanUpToString(state.text(), intoString:nil)
-                var termPos = myScanner.scanLocation
+                foundTerm  = myScanner.scanUpToString(state.text(), intoString:nil)
+                termPos = myScanner.scanLocation
                 
                 //determine what to parse for next in the context.
                 
@@ -588,7 +604,6 @@ class AnalyzeController: NSViewController {
         // Parser ended o.k. 
         self.progressText.insertText("Parser Completed\n")
         
-        let elapsed = NSDate().timeIntervalSinceDate (startTime)
         
         var outString = String(format:"Seconds Elapsed %.2f\n",NSDate().timeIntervalSinceDate (startTime))
         
@@ -598,49 +613,76 @@ class AnalyzeController: NSViewController {
         self.progressText.needsDisplay = true
         self.progressText.display()
         
-        for dev:Int in 0...data.count-1  { //Go thru the interfaces found
-            
-            var outputData:String = "Date,Time,Device,Speed,SendBytes/s,RecvBytes/s,SendFrames/s,RecvFrames/s,ReTrans/s,LostFrame/s\n"
-            
-            var list:NSMutableArray = data.objectAtIndex(dev) as! NSMutableArray  //get the sample list
-            var thisInterface:interface = interfaceList.objectAtIndex(dev) as! interface
-            
-            for sample:Int in 1...list.count-1 { //starts at sample 1 as we will delta N from N-1
+        if data.count > 0 {
+            for dev:Int in 0...data.count-1  { //Go thru the interfaces found
                 
-                var thisSample:netSample = list.objectAtIndex(sample)as! netSample
-                var prevSample:netSample = list.objectAtIndex(sample - 1) as! netSample
+                var outputData:String = "Date,Time,Device,Speed,SendBytes/s,RecvBytes/s,SendFrames/s,RecvFrames/s,ReTrans/s,LostFrame/s\n"
                 
-                var seconds = Int(thisSample.absTime.timeIntervalSinceDate(prevSample.absTime))
+                let list:NSMutableArray = data.objectAtIndex(dev) as! NSMutableArray  //get the sample list
+                let thisInterface:interface = interfaceList.objectAtIndex(dev) as! interface
                 
-                outputData = outputData + thisSample.date + ","
-                outputData = outputData + thisSample.time + ","
-                outputData = outputData + thisInterface.deviceName + ","
-                outputData = outputData + thisInterface.speed + ","
-                
-                outputData = outputData + rateAsString(thisSample.sentBytes, prevSample.sentBytes, seconds) + ","
-                outputData = outputData + rateAsString(thisSample.recvBytes, prevSample.recvBytes, seconds) + ","
-                outputData = outputData + rateAsString(thisSample.sentFrames, prevSample.sentFrames, seconds) + ","
-                outputData = outputData + rateAsString(thisSample.recvFrames, prevSample.recvFrames, seconds) + ","
-                outputData = outputData + rateAsString(thisSample.reXmit, prevSample.reXmit, seconds) + ","
-                outputData = outputData + rateAsString(thisSample.lostFrames, prevSample.lostFrames, seconds) + ","
-                
-                outputData = outputData + "\n"
-                
+                for sample:Int in 1...list.count-1 { //starts at sample 1 as we will delta N from N-1
+                    
+                    let thisSample:netSample = list.objectAtIndex(sample)as! netSample
+                    let prevSample:netSample = list.objectAtIndex(sample - 1) as! netSample
+                    
+                    let seconds = Int(thisSample.absTime.timeIntervalSinceDate(prevSample.absTime))
+                    
+                    outputData = outputData + thisSample.date + ","
+                    outputData = outputData + thisSample.time + ","
+                    outputData = outputData + thisInterface.deviceName + ","
+                    outputData = outputData + thisInterface.speed + ","
+                    
+                    outputData = outputData + rateAsString (thisSample.sentBytes,
+                                                            prevCount: prevSample.sentBytes, interval: seconds) + ","
+                    outputData = outputData + rateAsString (thisSample.recvBytes,
+                                                            prevCount: prevSample.recvBytes, interval: seconds) + ","
+                    outputData = outputData + rateAsString (thisSample.sentFrames,
+                                                            prevCount: prevSample.sentFrames, interval: seconds) + ","
+                    outputData = outputData + rateAsString(thisSample.recvFrames,
+                                                            prevCount: prevSample.recvFrames, interval: seconds) + ","
+                    outputData = outputData + rateAsString(thisSample.reXmit,
+                                                            prevCount: prevSample.reXmit, interval: seconds) + ","
+                    outputData = outputData + rateAsString(thisSample.lostFrames,
+                                                            prevCount: prevSample.lostFrames, interval: seconds) + ","
+                    
+                    outputData = outputData + "\n"
+                    
                 }
-            list.removeAllObjects()
-
-            var  outputFile = self.outDir + "/" + thisInterface.deviceName + ".csv"
+                
+                list.removeAllObjects()
+                
+                let  outputFile = (self.outDir as String) + "/" + thisInterface.deviceName + ".csv"
+                
+//                if (outputData.writeToFile(outputFile, atomically:true, encoding:NSUTF8StringEncoding, error:&error)){
+//                    self.progressText.insertText("Wrote: \(outputFile)\n")
+//                    self.progressText.needsDisplay = true
+//                    self.progressText.display()
+//                }
+//                else {
+//                    self.progressText.insertText("File write failed with error:\(error?.localizedDescription)\n")
+//                }
+                
+                do {
+                    try outputData.writeToFile(outputFile, atomically: true, encoding: NSUTF8StringEncoding)
+                    self.progressText.insertText("Wrote: \(outputFile)\n")
+                    self.progressText.needsDisplay = true
+                    self.progressText.display()
             
-            if (outputData.writeToFile(outputFile, atomically:true, encoding:NSUTF8StringEncoding, error:&error)){
-                self.progressText.insertText("Wrote: \(outputFile)\n")
-                self.progressText.needsDisplay = true
-                self.progressText.display()
+                }
+                catch {
+                    self.progressText.insertText("File write failed with error:\(error)\n")
+                }
             }
-            else {
-                self.progressText.insertText("File write failed with error:\(error?.localizedDescription)\n")
-            }
-
+                
+            
         }
+    
+//    else {
+//            self.progressText.insertText("No valid data parsed.\n")
+//        }
+
+        
         data.removeAllObjects()
         devNames.removeAllObjects()
         interfaceList.removeAllObjects()
