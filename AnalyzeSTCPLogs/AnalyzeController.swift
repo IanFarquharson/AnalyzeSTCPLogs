@@ -514,8 +514,8 @@ class AnalyzeController: NSViewController {
                 
                 let thisEntry = netSample()
                 var list:NSMutableArray
-                
-                thisEntry.date = String(format:"%02d/%02d/%02d",YY,MM,DD)
+
+                thisEntry.date = String(format:"%02d/%02d/%02d",DD,MM,YY)  //yy,dd,mm before...
                 thisEntry.time = String(format:"%02d:%02d:%02d",HH,MI,SS)
                 
                 let comps = NSDateComponents()
@@ -620,15 +620,24 @@ class AnalyzeController: NSViewController {
                 
                 let list:NSMutableArray = data.objectAtIndex(dev) as! NSMutableArray  //get the sample list
                 let thisInterface:interface = interfaceList.objectAtIndex(dev) as! interface
-                
+
+                var lastDate = ""
+
                 for sample:Int in 1...list.count-1 { //starts at sample 1 as we will delta N from N-1
                     
                     let thisSample:netSample = list.objectAtIndex(sample)as! netSample
                     let prevSample:netSample = list.objectAtIndex(sample - 1) as! netSample
                     
                     let seconds = Int(thisSample.absTime.timeIntervalSinceDate(prevSample.absTime))
-                    
-                    outputData = outputData + thisSample.date + ","
+
+                    if (thisSample.date != lastDate) {
+                        outputData = outputData + thisSample.date + ","
+                        lastDate = thisSample.date
+                    }
+                    else {
+                        outputData = outputData + ","
+                    }
+
                     outputData = outputData + thisSample.time + ","
                     outputData = outputData + thisInterface.deviceName + ","
                     outputData = outputData + thisInterface.speed + ","
@@ -647,6 +656,9 @@ class AnalyzeController: NSViewController {
                                                             prevCount: prevSample.lostFrames, interval: seconds) + ","
                     
                     outputData = outputData + "\n"
+
+
+
                     
                 }
                 
