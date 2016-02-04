@@ -4,11 +4,15 @@
 //
 //  Created by Ian Farquharson on 12/02/2015.
 //  Copyright (c) 2015 Ian Farquharson. All rights reserved.
-//
+//  Updated 2016 - Swift 2 and async parsing
 
 import Cocoa
 import Foundation
 import AppKit
+
+var GlobalMainQueue: dispatch_queue_t {
+    return dispatch_get_main_queue()
+}
 
 class AnalyzeController: NSViewController {
     
@@ -28,12 +32,22 @@ class AnalyzeController: NSViewController {
     
     @IBOutlet weak var startButton: NSButton!
     
+//    @IBAction func startPressed(sender: AnyObject) {
+//
+//
+//        progressText.insertText( "Starting\n")
+//        progSpinner.startAnimation(self)
+//        self.doParse(sourcePath.stringValue);
+//    }
+
     @IBAction func startPressed(sender: AnyObject) {
-    
 
         progressText.insertText( "Starting\n")
         progSpinner.startAnimation(self)
-        self.doParse(sourcePath.stringValue);
+
+            dispatch_async(GlobalMainQueue) {
+                self.doParse(self.sourcePath.stringValue)
+        }
     }
     
     @IBAction func resetPressed(sender: AnyObject) {
@@ -73,16 +87,13 @@ class AnalyzeController: NSViewController {
                     {
                         self.progressText.insertText("Selected \(openPanel.URL!) without .out suffix, unsuitable file?\n")
                         self.sourcePath.stringValue = ""
-
                         return
                     }
-                    
                     
                     let path = openPanel.URL?.path
 
                     self.sourcePath.stringValue = path!
                     self.progressText.insertText("Selected \(path)\n")
-                    
 
                     self.outDir = (openPanel.URL?.URLByDeletingLastPathComponent?.path)!
                     
@@ -240,12 +251,10 @@ class AnalyzeController: NSViewController {
                     
                 return devNames.count
             }
-            
         }
 
         func rateAsString (nowCount:Double, prevCount:Double, interval:Int) -> String
         {
-            
             var retVal:Double
             if interval == 0 {
                 return "div/0 error"
@@ -261,30 +270,10 @@ class AnalyzeController: NSViewController {
                     retVal = (((Double(UINT32_MAX) + 1.0) - prevCount) + nowCount) / Double(interval)
                 }
                 return String(format:"%.2f", retVal)
-                
-                //return ( String(format:"%.2f", retVal ))
-                
             }
         }
-        
     
         //read in the passed file.
-        
-        //Test Code to pop up a window
-        
-//        let win = NSWindow(contentRect: NSMakeRect(100,100,600,200),
-//            styleMask: NSResizableWindowMask | NSClosableWindowMask,
-//            backing: NSBackingStoreType.Buffered, defer:true)
-//        
-// //       win.makeKeyAndOrderFront(win)
-//        
-//        let controller = NSWindowController(window: win)
-//        controller.showWindow(self)
-        
-        
-        
-//        let dataRead = NSString(contentsOfFile: path, encoding:NSUTF8StringEncoding, error: &error)
-// let dataRead = String.contentsOfFile(path,encoding:NSUTF8StringEncoding, error: &error)
         
         let dataRead: NSString?
         do {
@@ -297,12 +286,8 @@ class AnalyzeController: NSViewController {
             return false
         }
         
-
-        
-        
         //Intitialize my scanner and whitespace sets
-    
-    
+
         let myScanner: NSScanner = NSScanner(string:dataRead! as String)
         
         //Declare position trackers
@@ -312,13 +297,11 @@ class AnalyzeController: NSViewController {
         var termPos:Int
         var foundMac:Bool
         var foundTerm:Bool
-    
         
         //Begin Parsing
         
         var state = Parser.lookForTime
         resetDMC()
-        
 
         while myScanner.atEnd == false
         {
@@ -598,13 +581,11 @@ class AnalyzeController: NSViewController {
                 progSpinner.stopAnimation(self)
                 return false
             }
-            
         }
         
         // Parser ended o.k. 
         self.progressText.insertText("Parser Completed\n")
-        
-        
+
         var outString = String(format:"Seconds Elapsed %.2f\n",NSDate().timeIntervalSinceDate (startTime))
         
         self.progressText.insertText(outString)
@@ -657,23 +638,11 @@ class AnalyzeController: NSViewController {
                     
                     outputData = outputData + "\n"
 
-
-
-                    
                 }
                 
                 list.removeAllObjects()
                 
                 let  outputFile = (self.outDir as String) + "/" + thisInterface.deviceName + ".csv"
-                
-//                if (outputData.writeToFile(outputFile, atomically:true, encoding:NSUTF8StringEncoding, error:&error)){
-//                    self.progressText.insertText("Wrote: \(outputFile)\n")
-//                    self.progressText.needsDisplay = true
-//                    self.progressText.display()
-//                }
-//                else {
-//                    self.progressText.insertText("File write failed with error:\(error?.localizedDescription)\n")
-//                }
                 
                 do {
                     try outputData.writeToFile(outputFile, atomically: true, encoding: NSUTF8StringEncoding)
@@ -686,15 +655,9 @@ class AnalyzeController: NSViewController {
                     self.progressText.insertText("File write failed with error:\(error)\n")
                 }
             }
-                
-            
-        }
-    
-//    else {
-//            self.progressText.insertText("No valid data parsed.\n")
-//        }
 
-        
+        }
+
         data.removeAllObjects()
         devNames.removeAllObjects()
         interfaceList.removeAllObjects()
