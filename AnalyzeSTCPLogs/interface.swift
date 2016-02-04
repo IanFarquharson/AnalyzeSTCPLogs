@@ -14,5 +14,4 @@ class interface {
     var MAC:String = ""
     var speed:String = ""
     var ipAddr:String = ""
-    
 }
