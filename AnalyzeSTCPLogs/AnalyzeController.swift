@@ -10,9 +10,6 @@ import Cocoa
 import Foundation
 import AppKit
 
-var GlobalMainQueue: dispatch_queue_t {
-    return dispatch_get_main_queue()
-}
 
 class AnalyzeController: NSViewController {
     
@@ -45,8 +42,8 @@ class AnalyzeController: NSViewController {
         progressText.insertText( "Starting\n")
         progSpinner.startAnimation(self)
 
-            dispatch_async(GlobalMainQueue) {
-                self.doParse(self.sourcePath.stringValue)
+        dispatch_async(dispatch_get_main_queue()) {
+            self.doParse(self.sourcePath.stringValue)
         }
     }
     
