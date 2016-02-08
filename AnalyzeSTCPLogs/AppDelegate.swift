@@ -27,6 +27,5 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         return (true)
         // Single window, so we can quit fine if user closes this
     }
-
 }
 
