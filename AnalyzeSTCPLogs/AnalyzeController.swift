@@ -208,7 +208,8 @@ class AnalyzeController: NSViewController {
         
         func checkDMC() -> Bool
         {
-            return (++deadManCount >= parseErrorCount)
+            deadManCount += 1
+            return (deadManCount >= parseErrorCount)
         }
         
         //Functions to manage parse types
