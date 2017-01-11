@@ -13,7 +13,7 @@ import AppKit
 
 class AnalyzeController: NSViewController {
     
-    var startTime:NSDate = NSDate()
+    var startTime:Date = Date()
     
     var devNames = NSMutableArray()
     var data = NSMutableArray()
@@ -37,22 +37,25 @@ class AnalyzeController: NSViewController {
 //        self.doParse(sourcePath.stringValue);
 //    }
 
-    @IBAction func startPressed(sender: AnyObject) {
+    @IBAction func startPressed(_ sender: AnyObject) {
 
         progressText.insertText( "Starting\n")
         progSpinner.startAnimation(self)
+//
+//        DispatchQueue.main.async {
+//            /*self.*/
+//            doParse(self.sourcePath.stringValue)
+//        }
+        if doParse(self.sourcePath.stringValue) != true {progressText.insertText ( "Parse Fault\n")}
 
-        dispatch_async(dispatch_get_main_queue()) {
-            self.doParse(self.sourcePath.stringValue)
-        }
     }
     
-    @IBAction func resetPressed(sender: AnyObject) {
+    @IBAction func resetPressed(_ sender: AnyObject) {
         
         sourcePath.stringValue = ""
         progressText.string = "Select File"
         progSpinner.stopAnimation(self)
-        startButton.enabled = false
+        startButton.isEnabled = false
     }
     
     override func viewDidLoad() {
@@ -64,12 +67,12 @@ class AnalyzeController: NSViewController {
 
         sourcePath.stringValue = ""
         progressText.string = "Select File\n"
-        startButton.enabled = false
+        startButton.isEnabled = false
     }
     
-    @IBAction func browseFile(sender: AnyObject) {
+    @IBAction func browseFile(_ sender: AnyObject) {
 
-            self.startButton.enabled = false
+            self.startButton.isEnabled = false
         
             let openPanel = NSOpenPanel()
             openPanel.allowsMultipleSelection = false
@@ -77,30 +80,30 @@ class AnalyzeController: NSViewController {
             openPanel.canCreateDirectories = false
             openPanel.canChooseFiles = true
         
-            openPanel.beginWithCompletionHandler { (result) -> Void in
+            openPanel.begin { (result) -> Void in
                 if result == NSFileHandlingPanelOKButton {
                     
-                    if openPanel.URL!.pathExtension != "out"
+                    if openPanel.url!.pathExtension != "out"
                     {
-                        self.progressText.insertText("Selected \(openPanel.URL!) without .out suffix, unsuitable file?\n")
+                        self.progressText.insertText("Selected \(openPanel.url!) without .out suffix, unsuitable file?\n")
                         self.sourcePath.stringValue = ""
                         return
                     }
                     
-                    let path = openPanel.URL?.path
+                    let path = openPanel.url?.path
 
                     self.sourcePath.stringValue = path!
                     self.progressText.insertText("Selected \(path)\n")
 
-                    self.outDir = (openPanel.URL?.URLByDeletingLastPathComponent?.path)!
+                    self.outDir = (openPanel.url?.deletingLastPathComponent().path)! as NSString
                     
                     self.progressText.insertText("Outputting to \(path!)\n")
-                    self.startButton.enabled = true
+                    self.startButton.isEnabled = true
                     }
             }
     }
     
-    func doParse (path:String) -> Bool {
+    func doParse (_ path:String) -> Bool {
         
         self.progressText.insertText("Parsing \(path)\n")
         self.progSpinner.startAnimation(self)
@@ -109,7 +112,7 @@ class AnalyzeController: NSViewController {
         
         let parseErrorCount = 100
         
-        startTime = NSDate()
+        startTime = Date()
         
         // Set up parsing vars... 
         var YY: Int = 0
@@ -133,11 +136,11 @@ class AnalyzeController: NSViewController {
 
         var deadManCount:Int = 0
         
-        let dateSet:NSCharacterSet = NSCharacterSet(charactersInString:"-_: \n\r")
+        let dateSet:CharacterSet = CharacterSet(charactersIn:"-_: \n\r")
 
-        let pctSet:NSCharacterSet = NSCharacterSet(charactersInString:"%/ \n\r")
+        let pctSet:CharacterSet = CharacterSet(charactersIn:"%/ \n\r")
     
-        let MACSet:NSCharacterSet = NSCharacterSet(charactersInString:":")
+        let MACSet:CharacterSet = CharacterSet(charactersIn:":")
 
         //Parser states, and the respective strings to look for
         
@@ -214,20 +217,20 @@ class AnalyzeController: NSViewController {
         
         //Functions to manage parse types
         
-        func scanForText(aScanner:NSScanner)
+        func scanForText(_ aScanner:Scanner)
         {
-           aScanner.charactersToBeSkipped = NSCharacterSet.whitespaceAndNewlineCharacterSet()
+           aScanner.charactersToBeSkipped = CharacterSet.whitespacesAndNewlines
             
         }
     
-        func scanForDate(aScanner:NSScanner)
+        func scanForDate(_ aScanner:Scanner)
         {
             aScanner.charactersToBeSkipped = dateSet
         }
         
-        func findName(aName:String) -> Int
+        func findName(_ aName:String) -> Int
         {
-            let index:Int = devNames.indexOfObject(aName)
+            let index:Int = devNames.index(of: aName)
 
             if index != NSNotFound
             {
@@ -235,7 +238,7 @@ class AnalyzeController: NSViewController {
             }
             else
             {
-                devNames.addObject(aName)
+                devNames.add(aName)
                 self.progressText.insertText("Found \(aName)\n")
                 
                 let newInterface = interface()
@@ -245,13 +248,13 @@ class AnalyzeController: NSViewController {
                 newInterface.speed = SP! as String
                 newInterface.deviceName = aName
                 
-                interfaceList.addObject(newInterface)
+                interfaceList.add(newInterface)
                     
                 return devNames.count
             }
         }
 
-        func rateAsString (nowCount:Double, prevCount:Double, interval:Int) -> String
+        func rateAsString (_ nowCount:Double, prevCount:Double, interval:Int) -> String
         {
             var retVal:Double
             if interval == 0 {
@@ -275,7 +278,7 @@ class AnalyzeController: NSViewController {
         
         let dataRead: NSString?
         do {
-            dataRead = try NSString(contentsOfFile: path, encoding: NSUTF8StringEncoding)
+            dataRead = try NSString(contentsOfFile: path, encoding: String.Encoding.utf8.rawValue)
         } catch let error as NSError {
             print(error.localizedDescription)
             self.progressText.insertText("File load failed with error:\(error)\n")
@@ -286,7 +289,7 @@ class AnalyzeController: NSViewController {
         
         //Intitialize my scanner and whitespace sets
 
-        let myScanner: NSScanner = NSScanner(string:dataRead! as String)
+        let myScanner: Scanner = Scanner(string:dataRead! as String)
         
         //Declare position trackers
         
@@ -301,7 +304,7 @@ class AnalyzeController: NSViewController {
         var state = Parser.lookForTime
         resetDMC()
 
-        while myScanner.atEnd == false
+        while myScanner.isAtEnd == false
         {
 
             if checkDMC() == true {
@@ -317,10 +320,10 @@ class AnalyzeController: NSViewController {
             case Parser.lookForTime:
                 
                 scanForText(myScanner)
-                if myScanner.scanUpToString(state.text(), intoString: nil) {
+                if myScanner.scanUpTo(state.text(), into: nil) {
                     
                     //found it, discard and advance
-                    myScanner.scanString(state.text(), intoString:nil)
+                    myScanner.scanString(state.text(), into:nil)
                     state = Parser.getTime
                     resetDMC()
                     break
@@ -329,12 +332,12 @@ class AnalyzeController: NSViewController {
             case Parser.getTime:
                 
                 scanForDate(myScanner)
-                if (myScanner.scanInteger (&YY) &&
-                    myScanner.scanInteger (&MM) &&
-                    myScanner.scanInteger (&DD) &&
-                    myScanner.scanInteger (&HH) &&
-                    myScanner.scanInteger (&MI) &&
-                    myScanner.scanInteger (&SS) == true ) {
+                if (myScanner.scanInt (&YY) &&
+                    myScanner.scanInt (&MM) &&
+                    myScanner.scanInt (&DD) &&
+                    myScanner.scanInt (&HH) &&
+                    myScanner.scanInt (&MI) &&
+                    myScanner.scanInt (&SS) == true ) {
                         state = Parser.lookForMAC
                         resetDMC()
                         break
@@ -342,8 +345,8 @@ class AnalyzeController: NSViewController {
                 
             case Parser.lookForMAC:
                 scanForText(myScanner)
-                if myScanner.scanUpToString(state.text(), intoString: nil) {
-                    myScanner.scanString(state.text(), intoString:nil)
+                if myScanner.scanUpTo(state.text(), into: nil) {
+                    myScanner.scanString(state.text(), into:nil)
                     state = Parser.getMAC
                     resetDMC()
                     break
@@ -351,7 +354,7 @@ class AnalyzeController: NSViewController {
                 
             case Parser.getMAC:
                 
-                if myScanner.scanUpToCharactersFromSet (NSCharacterSet.newlineCharacterSet(), intoString:&MA) {
+                if myScanner.scanUpToCharacters (from: CharacterSet.newlines, into:&MA) {
                         resetDMC()
                         state = Parser.lookForInterface
                         break
@@ -360,7 +363,7 @@ class AnalyzeController: NSViewController {
             case Parser.lookForInterface:
                 
                 scanForText(myScanner)
-                if myScanner.scanString(state.text(), intoString:nil) {
+                if myScanner.scanString(state.text(), into:nil) {
                     state = Parser.getInterface
                     resetDMC()
                     break
@@ -368,20 +371,20 @@ class AnalyzeController: NSViewController {
                 
             case Parser.getInterface:
                 
-                if myScanner.scanUpToCharactersFromSet (NSCharacterSet.newlineCharacterSet(), intoString:&DN) {
+                if myScanner.scanUpToCharacters (from: CharacterSet.newlines, into:&DN) {
                     resetDMC()
                     state = Parser.lookForSpeed
                     break
                 }
             case Parser.lookForSpeed:
-                if myScanner.scanString(state.text(), intoString:nil) {
+                if myScanner.scanString(state.text(), into:nil) {
                     state = Parser.getSpeed
                     resetDMC()
                     break
                 }
                 
             case Parser.getSpeed:
-                if myScanner.scanUpToCharactersFromSet (NSCharacterSet.newlineCharacterSet(), intoString:&SP) {
+                if myScanner.scanUpToCharacters (from: CharacterSet.newlines, into:&SP) {
                     resetDMC()
                     state = Parser.lookForMACSummary
                     break
@@ -389,8 +392,8 @@ class AnalyzeController: NSViewController {
                 
             case Parser.lookForMACSummary:
                 scanForText(myScanner)
-                if myScanner.scanUpToString(state.text(), intoString: nil) {
-                    myScanner.scanString(state.text(), intoString:nil)
+                if myScanner.scanUpTo(state.text(), into: nil) {
+                    myScanner.scanString(state.text(), into:nil)
                     state = Parser.lookForTransFrames
                     resetDMC()
                     break
@@ -398,7 +401,7 @@ class AnalyzeController: NSViewController {
                 
             case Parser.lookForTransFrames:
                 
-                if  myScanner.scanString(state.text(), intoString:nil) {
+                if  myScanner.scanString(state.text(), into:nil) {
                     state = Parser.getTransFrames
                     resetDMC()
                     break
@@ -414,7 +417,7 @@ class AnalyzeController: NSViewController {
                 
             case Parser.lookForTransBytes:
                 
-                if  myScanner.scanString(state.text(), intoString:nil) {
+                if  myScanner.scanString(state.text(), into:nil) {
                     state = Parser.getTransBytes
                     resetDMC()
                     break
@@ -430,7 +433,7 @@ class AnalyzeController: NSViewController {
                 
             case Parser.lookForRetransmit:
                 
-                if  myScanner.scanString(state.text(), intoString:nil) {
+                if  myScanner.scanString(state.text(), into:nil) {
                     state = Parser.getRetransmit
                     resetDMC()
                     break
@@ -446,7 +449,7 @@ class AnalyzeController: NSViewController {
                 
             case Parser.lookForRecFrames:
                 
-                if  myScanner.scanString(state.text(), intoString:nil) {
+                if  myScanner.scanString(state.text(), into:nil) {
                     state = Parser.getRecFrames
                     resetDMC()
                     break
@@ -461,7 +464,7 @@ class AnalyzeController: NSViewController {
                 }
             case Parser.lookForRecBytes:
                 
-                if  myScanner.scanString(state.text(), intoString:nil) {
+                if  myScanner.scanString(state.text(), into:nil) {
                     state = Parser.getRecBytes
                     resetDMC()
                     break
@@ -477,7 +480,7 @@ class AnalyzeController: NSViewController {
                 
             case Parser.lookForLostFrames:
                 
-                if  myScanner.scanString(state.text(), intoString:nil) {
+                if  myScanner.scanString(state.text(), into:nil) {
                     state = Parser.getLostFrames
                     resetDMC()
                     break
@@ -499,7 +502,7 @@ class AnalyzeController: NSViewController {
                 thisEntry.date = String(format:"%02d/%02d/%02d",DD,MM,YY)  //yy,dd,mm before...
                 thisEntry.time = String(format:"%02d:%02d:%02d",HH,MI,SS)
                 
-                let comps = NSDateComponents()
+                var comps = DateComponents()
                 comps.year = YY
                 comps.month = MM
                 comps.day = DD
@@ -507,7 +510,7 @@ class AnalyzeController: NSViewController {
                 comps.minute = MI
                 comps.second = SS
                 
-                thisEntry.absTime = NSCalendar.currentCalendar().dateFromComponents(comps)!
+                thisEntry.absTime = Calendar.current.date(from: comps)!
                 
                 thisEntry.sentBytes = TB
                 thisEntry.sentFrames = TF
@@ -526,14 +529,14 @@ class AnalyzeController: NSViewController {
                 if (devIndex > data.count)
                 {
                     list = NSMutableArray()
-                    data.addObject(list)
+                    data.add(list)
                 }
                 else
                 {
-                    list = data.objectAtIndex(devIndex) as! NSMutableArray
+                    list = data.object(at: devIndex) as! NSMutableArray
                 }
                 
-                list.addObject(thisEntry)
+                list.add(thisEntry)
                 
                 //So we might next have another device, or the end of the sample
                 //Save current position
@@ -541,14 +544,14 @@ class AnalyzeController: NSViewController {
                 currPos = myScanner.scanLocation
                 
                 state = Parser.lookForMAC
-                foundMac = myScanner.scanUpToString(state.text(), intoString:nil)
+                foundMac = myScanner.scanUpTo(state.text(), into:nil)
                 macPos = myScanner.scanLocation
                 
                 //reset context... 
                 myScanner.scanLocation = currPos
                 
                 state = Parser.lookForSampleTermination
-                foundTerm  = myScanner.scanUpToString(state.text(), intoString:nil)
+                foundTerm  = myScanner.scanUpTo(state.text(), into:nil)
                 termPos = myScanner.scanLocation
                 
                 //determine what to parse for next in the context.
@@ -584,7 +587,7 @@ class AnalyzeController: NSViewController {
         // Parser ended o.k. 
         self.progressText.insertText("Parser Completed\n")
 
-        var outString = String(format:"Seconds Elapsed %.2f\n",NSDate().timeIntervalSinceDate (startTime))
+        var outString = String(format:"Seconds Elapsed %.2f\n",Date().timeIntervalSince (startTime))
         
         self.progressText.insertText(outString)
         
@@ -597,17 +600,17 @@ class AnalyzeController: NSViewController {
                 
                 var outputData:String = "Date,Time,Device,Speed,SendBytes/s,RecvBytes/s,SendFrames/s,RecvFrames/s,ReTrans/s,LostFrame/s\n"
                 
-                let list:NSMutableArray = data.objectAtIndex(dev) as! NSMutableArray  //get the sample list
-                let thisInterface:interface = interfaceList.objectAtIndex(dev) as! interface
+                let list:NSMutableArray = data.object(at: dev) as! NSMutableArray  //get the sample list
+                let thisInterface:interface = interfaceList.object(at: dev) as! interface
 
                 var lastDate = ""
 
                 for sample:Int in 1...list.count-1 { //starts at sample 1 as we will delta N from N-1
                     
-                    let thisSample:netSample = list.objectAtIndex(sample)as! netSample
-                    let prevSample:netSample = list.objectAtIndex(sample - 1) as! netSample
+                    let thisSample:netSample = list.object(at: sample)as! netSample
+                    let prevSample:netSample = list.object(at: sample - 1) as! netSample
                     
-                    let seconds = Int(thisSample.absTime.timeIntervalSinceDate(prevSample.absTime))
+                    let seconds = Int(thisSample.absTime.timeIntervalSince(prevSample.absTime as Date))
 
                     if (thisSample.date != lastDate) {
                         outputData = outputData + thisSample.date + ","
@@ -643,7 +646,7 @@ class AnalyzeController: NSViewController {
                 let  outputFile = (self.outDir as String) + "/" + thisInterface.deviceName + ".csv"
                 
                 do {
-                    try outputData.writeToFile(outputFile, atomically: true, encoding: NSUTF8StringEncoding)
+                    try outputData.write(toFile: outputFile, atomically: true, encoding: String.Encoding.utf8)
                     self.progressText.insertText("Wrote: \(outputFile)\n")
                     self.progressText.needsDisplay = true
                     self.progressText.display()
@@ -660,7 +663,7 @@ class AnalyzeController: NSViewController {
         devNames.removeAllObjects()
         interfaceList.removeAllObjects()
         
-        outString = String(format:"Seconds Elapsed %.2f\n",NSDate().timeIntervalSinceDate (startTime))
+        outString = String(format:"Seconds Elapsed %.2f\n",Date().timeIntervalSince (startTime))
         
         self.progressText.insertText(outString)
         

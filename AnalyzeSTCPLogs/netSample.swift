@@ -10,7 +10,7 @@ import Foundation
 
 class netSample {
     var index: Int = 0
-    var absTime:NSDate = NSDate()
+    var absTime:Date = Date()
     var date:String = ""
     var time:String = ""
     var sentFrames: Double = 0.0
